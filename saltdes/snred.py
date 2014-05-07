@@ -43,7 +43,7 @@ from speccal import speccal
 
 from PySpectrograph.Spectra import findobj
 
-def specred(rawdir, prodir, imreduce=True, specreduce=True, calfile=None, lamp='Ar', automethod='Matchlines', skysection=[800,1000], cleanup=True):
+def specred(rawdir, prodir, imreduce=True, specreduce=True, calfile=None, lampfile='Ar', automethod='Matchlines', skysection=[800,1000], cleanup=True):
     print rawdir
     print prodir
 
@@ -130,11 +130,11 @@ def specred(rawdir, prodir, imreduce=True, specreduce=True, calfile=None, lamp='
            if obs_dict['OBJECT'][i].upper().strip()=='ARC':
                lamp=obs_dict['LAMPID'][i].strip().replace(' ', '')
                arcimage='mfxgbp'+os.path.basename(infile_list[i])
-               lampfile=iraf.osfn("pysalt$data/linelists/%s.txt" % lamp)
+               #lampfile=iraf.osfn("pysalt$data/linelists/%s.salt" % lamp)
 
                specidentify(arcimage, lampfile, dbfile, guesstype='rss', 
                   guessfile='', automethod=automethod,  function='legendre',  order=3, 
-                  rstep=100, rstart='middlerow', mdiff=10, thresh=2, niter=5, smooth=3,
+                  rstep=100, rstart='middlerow', mdiff=20, thresh=2, niter=5, smooth=3,
                   inter=True, clobber=True, logfile=logfile, verbose=True)
 
                specrectify(arcimage, outimages='', outpref='x', solfile=dbfile, caltype='line', 
@@ -156,12 +156,6 @@ def specred(rawdir, prodir, imreduce=True, specreduce=True, calfile=None, lamp='
            blank=0.0, clobber=True, logfile=logfile, verbose=True)
 
 
-    #create the spectra text files for all of our objects
-    spec_list=[]
-    for img in objimages.split(','):
-       spec_list.extend(createspectra('x'+img, obsdate, smooth=False, skysection=skysection, clobber=True))
-    print spec_list
- 
     return
 
 
@@ -169,4 +163,5 @@ def specred(rawdir, prodir, imreduce=True, specreduce=True, calfile=None, lamp='
 if __name__=='__main__':
    rawdir=sys.argv[1]
    prodir=os.path.curdir+'/'
-   specred(rawdir, prodir, imreduce=True, specreduce=True, cleanup=True)
+   lampfile = os.path.dirname(sys.argv[0]) + '/Ar.sn'
+   specred(rawdir, prodir, imreduce=False, specreduce=True, cleanup=True, lampfile=lampfile)
