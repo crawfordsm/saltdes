@@ -177,7 +177,7 @@ def extract_spectra(img, minsize=5, thresh=3, calfile=None, smooth=False, maskze
     ofile='%s.%s_%i.txt' % (target, extract_date(img), extract_number(img))
     write_extract(ofile, [ap_list[0]], outformat='ascii', clobber=clobber)
 
-    #cleanspectra(ofile)
+    cleanspectra(ofile)
 
     if calfile is not None: 
        extfile=iraf.osfn("pysalt$data/site/suth_extinct.dat")
