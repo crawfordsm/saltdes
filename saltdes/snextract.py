@@ -24,7 +24,7 @@ from speccal import speccal
 
 from PySpectrograph.Spectra import findobj
 
-def snexract(imglist, calfile=None):
+def snextract(img, calfile=None):
 
     
     #set up some files that will be needed
@@ -33,11 +33,9 @@ def snexract(imglist, calfile=None):
 
     #create the spectra text files for all of our objects
     spec_list=[]
-    for img in imglist:
-       spec_list.extend(extract_spectra(img, calfile=calfile, smooth=False, clobber=True))
+    spec_list.extend(extract_spectra(img, calfile=calfile, smooth=False, clobber=True))
     print spec_list
 
-    #combine the spectra if desired
  
 
 def speccombine(spec_list, obsdate):
@@ -140,6 +138,7 @@ def extract_spectra(img, minsize=5, thresh=3, calfile=None, smooth=False, maskze
     #specslitnormalize(img, 'n'+img, '', response=None, response_output=None, order=3, conv=1e-2, niter=20,
     #                 startext=0, clobber=False,logfile='salt.log',verbose=True)
 
+    print img
     hdu=pyfits.open(img)
     target=hdu[0].header['OBJECT']
     propcode=hdu[0].header['PROPID']
@@ -245,4 +244,4 @@ def findskysection(section, skysection=[800,900], skylimit=100):
 
 
 if __name__=='__main__':
-   snextract(sys.argv[1:], calfile=sys.argv[2])
+   snextract(sys.argv[1], calfile=sys.argv[2])
