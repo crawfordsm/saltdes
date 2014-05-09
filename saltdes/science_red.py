@@ -24,7 +24,7 @@ from pyraf import iraf
 from iraf import pysalt
 
 from saltobslog import obslog
-from saltprepare import saltprepare
+from saltprepare import  *
 from saltbias import saltbias
 from saltgain import saltgain
 from saltxtalk import saltxtalk
@@ -67,13 +67,15 @@ def science_red(rawdir, prodir, imreduce=True, specreduce=True, bpmfile=None, ca
  
     if imreduce:   
       #prepare the data
-      saltprepare(infiles, '', 'p', createvar=True, badpixelimage=bpmfile, clobber=True, logfile=logfile, verbose=True)
+      saltprepare(infiles, '', 'p', createvar=False, badpixelimage='', clobber=True, logfile=logfile, verbose=True)
 
       #bias subtract the data
       saltbias('pP*fits', '', 'b', subover=True, trim=True, subbias=False, masterbias='',  
               median=False, function='polynomial', order=5, rej_lo=3.0, rej_hi=5.0, 
               niter=10, plotover=False, turbo=False, 
               clobber=True, logfile=logfile, verbose=True)
+
+      add_variance('bpP*fits', bpmfile)
 
       #gain correct the data
       saltgain('bpP*fits', '', 'g', usedb=False, mult=True, clobber=True, logfile=logfile, verbose=True)
@@ -158,7 +160,27 @@ def science_red(rawdir, prodir, imreduce=True, specreduce=True, bpmfile=None, ca
 
     return
 
-
+def add_variance(filenames, bpmfile):
+    file_list=glob.glob(filenames)
+    badpixelstruct = saltio.openfits(bpmfile)
+    for f in file_list:
+        print f
+        struct = pyfits.open(f)
+        nsciext=len(struct)-1
+        nextend=nsciext
+        for i in range(1, nsciext+1):
+            hdu=CreateVariance(struct[i], i, nextend+i)
+            struct[i].header.set('VAREXT',nextend+i, comment='Extension for Variance Frame')
+            struct.append(hdu)
+        nextend+=nsciext
+        for i in range(1, nsciext+1):
+            hdu=createbadpixel(struct, badpixelstruct, i, nextend+i)
+            struct[i].header.set('BPMEXT',nextend+i, comment='Extension for Bad Pixel Mask')
+            struct.append(hdu)
+        nextend+=nsciext
+        struct[0].header.set('NEXTEND', nextend)
+        if os.path.isfile(f): os.remove(f)
+        struct.writeto(f)
 
 if __name__=='__main__':
    rawdir=sys.argv[1]
