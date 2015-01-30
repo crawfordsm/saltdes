@@ -4,6 +4,7 @@ SNEXTRACT
 
 extract supernova spectra from image or images and combine them
 
+
 """
 
 import os, sys, glob, shutil, string
